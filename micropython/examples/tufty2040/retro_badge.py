@@ -1,13 +1,12 @@
 # A retro badge with photo and QR code.
 # Copy your image to your Tufty alongside this example - it should be a 120 x 120 jpg.
-
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
 from pimoroni import Button
 import time
 import jpegdec
 import qrcode
+import display_singleton
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 button_c = Button(9, invert=False)
 
 WIDTH, HEIGHT = display.get_bounds()

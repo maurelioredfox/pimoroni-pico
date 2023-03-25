@@ -1,10 +1,10 @@
 import time
 import machine
-
 import display_singleton
 
 display = display_singleton.get_display()
 rtc = machine.RTC()
+display.set_backlight(0.5)
 
 # Tufty constants.
 A = 7
@@ -15,7 +15,6 @@ DOWN = 6
 LED = 25
 
 WIDTH, HEIGHT = display.get_bounds()
-display.set_backlight(1.0)
 
 # Buttons
 button_a = machine.Pin(A, machine.Pin.IN)
@@ -36,6 +35,11 @@ set_clock = False
 cursor = 0
 last = 0
 
+vbat_adc = machine.ADC(29)
+vref_adc = machine.ADC(28)
+vref_en = machine.Pin(27)
+vref_en.init(machine.Pin.OUT)
+vref_en.value(0)
 
 def days_in_month(month, year):
     if month == 2 and ((year % 4 == 0 and year % 100 != 0) or year % 400 == 0):
@@ -138,10 +142,27 @@ def draw_clock():
 
     display.update()
 
+def get_voltage():
+    vref_en.value(1)
+    vdd = 1.24 * (65535 / vref_adc.read_u16())
+    vbat = ((vbat_adc.read_u16() / 65535) * 3 * vdd ) 
+    vref_en.value(0)
+    return vbat
+
+def register_bat():
+    with open('batterylog.txt','a') as file:
+        file.write('\n')
+        file.write(('{};{}').format(last_time-zero,get_voltage()))
+        print(('{};{}').format(last_time-zero,get_voltage()))
+    
 
 year, month, day, wd, hour, minute, second, _ = rtc.datetime()
 
 last_second = second
+zero = time.time()
+last_time = zero
+
+register_bat()
 
 while True:
     if not set_clock:
@@ -149,4 +170,7 @@ while True:
         if second != last_second:
             draw_clock()
             last_second = second
+    if last_time + 60 <= time.time():
+        last_time = time.time()
+        register_bat()
     time.sleep(0.01)

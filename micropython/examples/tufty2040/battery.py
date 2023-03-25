@@ -1,13 +1,12 @@
 # This example reads the voltage from a battery connected to Tufty 2040
 # and uses this reading to calculate how much charge is left in the battery.
-
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
 from machine import ADC, Pin
 import time
+import display_singleton
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 
-display.set_backlight(0.8)
+display.set_backlight(0.5)
 
 # set up the ADCs for measuring battery voltage
 vbat_adc = ADC(29)

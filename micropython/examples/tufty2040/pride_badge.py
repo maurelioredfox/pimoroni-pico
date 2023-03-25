@@ -1,9 +1,8 @@
 # A name badge with customisable Pride flag background.
-
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
 import math
+import display_singleton
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 
 WIDTH, HEIGHT = display.get_bounds()
 
@@ -36,14 +35,14 @@ COLOUR_ORDER = [RED, ORANGE, YELLOW, GREEN, INDIGO, VIOLET]  # traditional pride
 # CHEVRONS = [] # No chevrons
 CHEVRONS = [WHITE, PINK, BLUE, BROWN, BLACK]  # Progress Pride Flag
 # Initial chevron height compared to screen height
-FIRST_CHEVRON_HEIGHT = 0.4
+FIRST_CHEVRON_HEIGHT = 0.2
 
 # Change this for vertical stripes
 STRIPES_DIRECTION = "horizontal"
 
 # Change details here! Works best with a short, one word name
-NAME = "Hel"
-PRONOUNS = "She/they"
+NAME = "Pixy"
+PRONOUNS = "He/Him"
 
 # Change the colour of the text (swapping these works better on a light background)
 TEXT_COLOUR = WHITE
@@ -63,8 +62,8 @@ if STRIPES_DIRECTION == "vertical":
         display.rectangle(stripe_width * x, 0, stripe_width, HEIGHT)
 
 if len(CHEVRONS) > 0:
-    stripe_width = round((HEIGHT * (1 - FIRST_CHEVRON_HEIGHT)) / len(CHEVRONS))
-    offset = -stripe_width * math.floor((len(CHEVRONS) + 1) / 2)
+    stripe_width = round((HEIGHT * (1 - FIRST_CHEVRON_HEIGHT)) / len(CHEVRONS) * 0.7)
+    offset = round(-stripe_width * math.floor((len(CHEVRONS) + 1) / 2) * 1.3)
     middle = round(HEIGHT / 2)
     for x in range(len(CHEVRONS) - 1, -1, -1):
         display.set_pen(CHEVRONS[x])

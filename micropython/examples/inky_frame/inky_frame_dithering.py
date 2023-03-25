@@ -1,6 +1,6 @@
 # from picographics import PicoGraphics, DISPLAY_INKY_FRAME as DISPLAY      # 5.7"
-# from picographics import PicoGraphics, DISPLAY_INKY_FRAME_4 as DISPLAY  # 4.0"
-from picographics import PicoGraphics, DISPLAY_INKY_FRAME_7 as DISPLAY  # 7.3"
+from picographics import PicoGraphics, DISPLAY_TUFTY_2040 as DISPLAY  # 4.0"
+# from picographics import PicoGraphics, DISPLAY_INKY_FRAME_7 as DISPLAY  # 7.3"
 
 graphics = PicoGraphics(DISPLAY)
 

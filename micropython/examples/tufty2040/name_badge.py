@@ -1,6 +1,6 @@
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
+import display_singleton
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 WIDTH, HEIGHT = display.get_bounds()
 display.set_backlight(1.0)
 
