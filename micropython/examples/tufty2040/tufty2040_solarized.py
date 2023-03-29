@@ -1,4 +1,5 @@
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040, PEN_P4
+from picographics import PEN_P4
+import display_singleton
 from pimoroni import Button
 import math
 import time
@@ -52,7 +53,8 @@ def bargraph(ox, oy, w, h, value, colors, pips=32):
             lcd.rectangle(ox + x, oy, pip_width - 2, h)
 
 
-lcd = PicoGraphics(DISPLAY_TUFTY_2040, pen_type=PEN_P4)
+
+lcd = display_singleton.get_display()
 
 lcd.set_backlight(0.8)
 lcd.set_font("bitmap8")

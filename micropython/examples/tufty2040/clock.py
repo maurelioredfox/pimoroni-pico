@@ -1,9 +1,9 @@
 import time
 import machine
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
+import display_singleton
 
 rtc = machine.RTC()
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 
 # Tufty constants.
 A = 7

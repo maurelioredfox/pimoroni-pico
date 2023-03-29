@@ -1,9 +1,9 @@
 # A name badge with customisable Pride flag background.
 
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
+import display_singleton
 import math
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 
 WIDTH, HEIGHT = display.get_bounds()
 

@@ -2,9 +2,9 @@
 
 import time
 from pimoroni import Button
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
+import display_singleton
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 
 display.set_backlight(1.0)
 display.set_font("bitmap8")

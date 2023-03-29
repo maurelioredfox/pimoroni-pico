@@ -1,8 +1,8 @@
 import time
 from pimoroni import Button
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040, PEN_RGB332
+import display_singleton
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040, pen_type=PEN_RGB332, rotate=180)
+display = display_singleton.get_display()
 
 # Tufty constants
 A = 7

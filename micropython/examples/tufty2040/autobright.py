@@ -3,7 +3,7 @@
 import time
 from machine import ADC, Pin
 from pimoroni import Button
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040
+import display_singleton
 import micropython
 
 # Constants for automatic brightness adjustment.
@@ -37,7 +37,7 @@ vbat_adc = ADC(29)
 vref_adc = ADC(28)
 usb_power = Pin(24, Pin.IN)
 
-display = PicoGraphics(display=DISPLAY_TUFTY_2040)
+display = display_singleton.get_display()
 display.set_backlight(1.0)
 display.set_font("bitmap8")
 WHITE = display.create_pen(255, 255, 255)
