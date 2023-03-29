@@ -3,7 +3,7 @@
 import gc
 import time
 from os import listdir
-from picographics import PicoGraphics, DISPLAY_TUFTY_2040, PEN_RGB332
+import display_singleton
 from pimoroni import Button
 
 
@@ -38,7 +38,7 @@ def get_applications() -> list[dict[str, str]]:
     # fetch a list of the applications that are stored in the filesystem
     applications = []
     for file in listdir():
-        if file.endswith(".py") and file != "main.py":
+        if file.endswith(".py") and file != "main.py" and file != "display_singleton.py":
             # convert the filename from "something_or_other.py" to "Something Or Other"
             # via weird incantations and a sprinkling of voodoo
             title = " ".join([v[:1].upper() + v[1:] for v in file[:-3].split("_")])
@@ -58,7 +58,8 @@ def prepare_for_launch() -> None:
     for k in locals().keys():
         if k not in ("__name__",
                      "application_file_to_launch",
-                     "gc"):
+                     "gc",
+                     "display_singleton"):
             del locals()[k]
     gc.collect()
 
@@ -70,7 +71,7 @@ def menu() -> str:
     button_down = Button(6, invert=False)
     button_a = Button(7, invert=False)
 
-    display = PicoGraphics(display=DISPLAY_TUFTY_2040, pen_type=PEN_RGB332)
+    display = display_singleton.get_display()
     display.set_backlight(1.0)
 
     selected_item = 2
