@@ -71,7 +71,7 @@ def menu() -> str:
     button_a = Button(7, invert=False)
 
     display = display_singleton.get_display()
-    display.set_backlight(1.0)
+    display.set_backlight(0.7)
 
     selected_item = 2
     scroll_position = 2
