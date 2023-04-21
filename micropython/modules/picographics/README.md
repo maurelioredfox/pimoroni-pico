@@ -67,6 +67,7 @@ Bear in mind that MicroPython has only 192K of RAM available- a 320x240 pixel di
 * Pico Inky Pack / Badger 2040 / Badger 2040 W - 296x128 mono E ink - `DISPLAY_INKY_PACK`
 * Inky Frame 5.7" - 600x448 7-colour E ink - `DISPLAY_INKY_FRAME`
 * Inky Frame 4.0" - 640x400 7-colour E ink - `DISPLAY_INKY_FRAME_4`
+* Inky Frame 7.3" - 800x480 7-colour E ink - `DISPLAY_INKY_FRAME_7`
 * Pico GFX Pack - 128x64 mono LCD Matrix - `DISPLAY_GFX_PACK`
 * Galactic Unicorn - 53x11 LED Matrix - `DISPLAY_GALACTIC_UNICORN`
 * Interstate75 and 75W - HUB75 Matrix driver - `DISPLAY_INTERSTATE75_SIZEOFMATRIX` please read below!
@@ -561,7 +562,7 @@ j = jpegdec.JPEG(display)
 j.open_file("filename.jpeg")
 
 # Decode the JPEG
-j.decode(0, 0, jpegdec.JPEG_SCALE_FULL)
+j.decode(0, 0, jpegdec.JPEG_SCALE_FULL, dither=True)
 
 # Display the result
 display.update()
@@ -578,3 +579,4 @@ The arguments for `decode` are as follows:
 1. Decode X - where to place the decoded JPEG on screen
 2. Decode Y
 3. Flags - one of `JPEG_SCALE_FULL`, `JPEG_SCALE_HALF`, `JPEG_SCALE_QUARTER` or `JPEG_SCALE_EIGHTH`
+4. If you want to turn off dither altogether, try `dither=False`. This is useful if you want to [pre-dither your images](https://ditherit.com/) or for artsy posterization effects.

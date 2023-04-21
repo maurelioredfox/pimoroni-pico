@@ -28,10 +28,13 @@ include(pcf85063a/micropython)
 include(adcfft/micropython)
 
 # LEDs & Matrices
-include(cosmic_unicorn/micropython)
+include(galactic_unicorn/micropython)
 
 # ULAB
 include(micropython-common-ulab)
 enable_ulab()
 
 include(modules_py/modules_py)
+
+# C++ Magic Memory
+include(cppmem/micropython)

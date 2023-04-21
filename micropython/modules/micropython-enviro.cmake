@@ -26,12 +26,25 @@ include(pcf85063a/micropython)
 
 # Utility
 include(adcfft/micropython)
+include(wakeup/micropython)
+
+# Configure wakeup for Enviro
+target_compile_definitions(usermod_wakeup INTERFACE
+    -DWAKEUP_HAS_RTC=1
+)
 
 # LEDs & Matrices
-include(galactic_unicorn/micropython)
+include(plasma/micropython)
 
-# ULAB
-include(micropython-common-ulab)
-enable_ulab()
+# Servos & Motors
+include(pwm/micropython)
+include(servo/micropython)
+include(encoder/micropython)
+include(motor/micropython)
+
+# include(micropython-common)
 
 include(modules_py/modules_py)
+
+# C++ Magic Memory
+include(cppmem/micropython)
