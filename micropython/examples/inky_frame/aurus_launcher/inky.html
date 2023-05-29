@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            background-color: transparent;
+            border: 1px solid transparent;
+            padding: .375rem .75rem;
+            font-size: 1rem;
+            border-radius: .25rem;
+        }
+        .btn-primary {
+          color: #fff;
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+        }
+        .btn-secondary {
+          color: #fff;
+          background-color: #6c757d;
+          border-color: #6c757d;
+        }
+    </style>
+    <script>
+        function save(){
+            let program = document.querySelector("input[name='mode']:checked").value;
+        
+            let payload = {
+                "state": program
+            }
+            
+            if(program == 'camera'){
+                //send the photo first
+                fetch("./savecamera", {
+                    method:"POST",
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({"image": image.slice(image.indexOf('base64') + 7) })
+                })
+                .then(function(resp){
+                    fetch("./save", {
+                        method:"POST",
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({"state":"image_gallery", "config": { "current": 5 }})
+                    });
+                });
+            }
+            else{
+                switch (program){
+                    case "badge":
+                        payload["config"] = {
+                            "image":0,
+                            "border":0,
+                            "colors":0,
+                            "text":0,
+                            "new": true
+                        };
+                        break;
+                    case "image_gallery":
+                        payload["config"] = {
+                            "current": document.querySelector('input[name="gallery_pic"]:checked').value / 1
+                        };
+                        break;
+                        
+                    case "camera":
+                        payload["state"] = "image_gallery"
+                        payload["config"] = { "current": 5 };
+                        break;
+                }
+                
+                fetch("./save", {
+                    method:"POST",
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify(payload)
+                });
+            }
+        }
+        
+        function handleModeRadio(evt) {
+            //evt.preventDefault();
+            const selected = this.value;
+            const configDivs = document.querySelectorAll("div.config");
+            configDivs.forEach(div => {
+                div.style.display = 'none';
+            });
+
+            const configToShow = document.getElementById("config_" + selected);
+            if (configToShow) {
+                configToShow.style.display = 'block';
+            }
+        }
+
+        let image = null
+        let img_upload = document.getElementById("file_upload")
+        let img_canvas = document.getElementById("file_canvas")
+
+        function resizeAndPreview(file){
+            
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var img = document.createElement("img");
+                img.onload = function (event) {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = 640
+                    canvas.height = 400
+                    var context = canvas.getContext('2d');
+                    context.drawImage(img, 0, 0, 640, 400);
+                    image = canvas.toDataURL('image/jpeg', 0.2)
+            
+                    img_canvas.innerHTML = `<div class="image">
+                        <img src="${image}" alt="image">
+                    </div>`
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+        
+        window.onload = function() {
+            const inputs = document.querySelectorAll("input[name='mode']");
+            inputs.forEach(input => {
+                input.addEventListener('touchstart', handleModeRadio);
+                input.addEventListener('click', handleModeRadio);
+            });
+            
+            img_upload = document.getElementById("file_upload")
+            img_canvas = document.getElementById("file_canvas")
+
+            img_upload.addEventListener("change", () => {
+                const file = img_upload.files
+                resizeAndPreview(file[0]);
+            })
+        };
+        
+    </script>
+</head>
+<body>
+    <h1>Inky configuration page</h1>
+    <div id="program">
+        <input type="radio" id="badge" name="mode" value="badge">
+        <label for="badge">Badge</label><br>
+        <input type="radio" id="passport" name="mode" value="passport">
+        <label for="passport">Arstotzka Passport</label><br>
+        <input type="radio" id="image_gallery" name="mode" value="image_gallery">
+        <label for="image_gallery">Picture Gallery</label><br>
+        <input type="radio" id="camera" name="mode" value="camera">
+        <label for="camera">Camera</label><br>
+    </div>
+    <hr>
+    <div id="config_badge" class="config" style="display: none;">
+        <p>badge config placeholder</p>
+    </div>
+    <div id="config_passport" class="config" style="display: none;">
+        <p>passport config placeholder</p>
+    </div>
+    <div id="config_image_gallery" class="config" style="display: none;">
+        <h3>picture</h3>
+        <input type="radio" id="gallery1" name="gallery_pic" value="0">
+        <label for="gallery1">fox window</label><br>
+        <input type="radio" id="gallery2" name="gallery_pic" value="1">
+        <label for="gallery2">undertaker</label><br>
+        <input type="radio" id="gallery3" name="gallery_pic" value="2">
+        <label for="gallery3">one brain cell pixy</label><br>
+        <input type="radio" id="gallery4" name="gallery_pic" value="3">
+        <label for="gallery4">toberal caminhão</label><br>
+        <input type="radio" id="gallery5" name="gallery_pic" value="4">
+        <label for="gallery5">friday in caleefornia</label><br>
+    </div>
+    <div id="config_camera" class="config" style="display: none;">
+        <input id="file_upload" name="file_upload" type="file" accept="image/jpeg, image/png, image/jpg">
+        <output id="file_canvas"></output>
+    </div>
+    <hr>
+    <div class="footer">
+        <a href="./reset" class="btn btn-secondary">Exit without saving</a>
+        <input class="btn btn-primary" type="button" onclick="save()" value="Save and Exit">
+    </div>
+</body>
+</html>

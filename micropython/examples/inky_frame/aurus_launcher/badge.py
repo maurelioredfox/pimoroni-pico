@@ -1,5 +1,6 @@
 from machine import Pin
 from pimoroni import ShiftRegister
+import display_singleton
 import gc
 import json
 import os
@@ -11,10 +12,8 @@ HOLD_VSYS_EN_PIN = 2
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT)
 hold_vsys_en_pin.value(True)
 
-#variables main will populate
-display = None
-WIDTH = None
-HEIGHT = None
+display = display_singleton.get_display()
+WIDTH, HEIGHT = display.get_bounds()
 
 #helper for colors
 BLACK = 0
@@ -58,7 +57,7 @@ Colors = [{
     }]
 
 NAME = [{"name":"Pixylatte","size":2},{"name":"Aurunemaru","size":1.7}]
-IMAGE = [{"file":"badge_pixy.jpg","name":0},{"file":"badge_auru.jpg","name":1},{"file":"badge_potat.jpg","name":0}]
+IMAGE = [{"file":"img/badge_pixy.jpg","name":0},{"file":"img/badge_auru.jpg","name":1},{"file":"img/badge_potat.jpg","name":0}]
 
 gc.collect()
 

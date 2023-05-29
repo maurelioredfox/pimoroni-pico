@@ -7,3 +7,4 @@ def get_display():
     if display == None:
         display = PicoGraphics(display=DISPLAY_INKY_FRAME_4)
     return display
+# WIDTH, HEIGHT = graphics.get_bounds()

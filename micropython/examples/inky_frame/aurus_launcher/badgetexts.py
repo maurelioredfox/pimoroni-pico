@@ -91,7 +91,7 @@ def texts2(display,colors):
     gc.collect()
     
     jpeg = jpegdec.JPEG(display)
-    jpeg.open_file("badgetext_fairy.jpg")
+    jpeg.open_file("img/badgetext_fairy.jpg")
     jpeg.decode(320,173,jpegdec.JPEG_SCALE_FULL)
     jpeg.decode(320,253,jpegdec.JPEG_SCALE_FULL)
     jpeg.decode(320,293,jpegdec.JPEG_SCALE_FULL)
@@ -118,7 +118,7 @@ def texts2(display,colors):
     display.triangle(595,385,620,341,570,341)
     display.polygon([(595,330),(616,343),(616,367),(595,380),(574,367),(574,343)])
     
-    jpeg.open_file("badgetext_fire.jpg")
+    jpeg.open_file("img/badgetext_fire.jpg")
     jpeg.decode(580,340,jpegdec.JPEG_SCALE_FULL)
 
 texts = []

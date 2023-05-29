@@ -11,21 +11,20 @@ WIDTH, HEIGHT = display.get_bounds()
 display.set_font("bitmap8")
 
 def set_pixy():
-    state = {"name": 0, "image":0, "border":1,"colors":0, "text":0, "new":True}
+    state = {"name": 0, "image":2, "border":1,"colors":2, "text":2, "new":True}
     helper.save_json("/badge_state.json",state)
 
 def set_auru():
-    state = {"name": 1, "image":1, "border":1,"colors":0, "text":0, "new":True}
+    state = {"name": 1, "image":1, "border":1,"colors":2, "text":0, "new":True}
     helper.save_json("/badge_state.json",state)
     
 def reload_last():
     pass
 
-SKIP_DRAW = False
+SKIP_DRAW = True
 
-def draw():
+def menu():
     global SKIP_DRAW
-    SKIP_DRAW = True
 
     # Draws the menu
     display.set_pen(1)
@@ -59,22 +58,29 @@ def draw():
     helper.led_warn.on()
     display.update()
     helper.led_warn.off()
-
+    
+    SKIP_DRAW = True
+    
 def update():
-    if helper.inky_frame.button_a.read():
-        helper.inky_frame.button_a.led_on()
-        set_pixy()
-        helper.update_state("badge")
-        time.sleep(0.5)
-        reset()
-    if helper.inky_frame.button_b.read():
-        helper.inky_frame.button_b.led_on()
-        set_auru()
-        helper.update_state("badge")
-        time.sleep(0.5)
-        reset()
-    if helper.inky_frame.button_c.read():
-        helper.inky_frame.button_c.led_on()
-        helper.update_state("image_gallery")
-        time.sleep(0.5)
-        reset()
+    menu()
+    while True:
+        if helper.inky_frame.button_a.read():
+            helper.inky_frame.button_a.led_on()
+            set_pixy()
+            helper.update_state("badge")
+            time.sleep(0.5)
+            reset()
+        if helper.inky_frame.button_b.read():
+            helper.inky_frame.button_b.led_on()
+            set_auru()
+            helper.update_state("badge")
+            time.sleep(0.5)
+            reset()
+        if helper.inky_frame.button_c.read():
+            helper.inky_frame.button_c.led_on()
+            helper.update_state("image_gallery")
+            time.sleep(0.5)
+            reset()
+        
+def draw():
+    pass

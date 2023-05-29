@@ -1,22 +1,27 @@
 from machine import Pin
 import jpegdec
 from pimoroni import ShiftRegister
+import display_singleton
+import inky_helper_custom as helper
+import os
+import json
 
 # you can change your file names here
 IMAGE = []
-IMAGE.append("imageA.jpg")
-IMAGE.append("imageB.jpg")
-IMAGE.append("imageC.jpg")
-IMAGE.append("imageD.jpg")
-IMAGE.append("imageE.jpg")
+IMAGE.append("img/imageA.jpg")
+IMAGE.append("img/imageB.jpg")
+IMAGE.append("img/imageC.jpg")
+IMAGE.append("img/imageD.jpg")
+IMAGE.append("img/imageE.jpg")
+IMAGE.append("img/camera.jpg")
 
 current = 0
 
 # set up the display
-display = None
-WIDTH = None
-HEIGHT = None
+display = display_singleton.get_display()
+WIDTH, HEIGHT = display.get_bounds()
 SKIP_DRAW = True
+state = None
 
 # Inky Frame uses a shift register to read the buttons
 SR_CLOCK = 8
@@ -39,17 +44,36 @@ HOLD_VSYS_EN_PIN = 2
 hold_vsys_en_pin = Pin(HOLD_VSYS_EN_PIN, Pin.OUT)
 hold_vsys_en_pin.value(True)
 
+def load_state():
+    global state
+    data = json.loads(open("/image_gallery_state.json", "r").read())
+    if type(data) is dict:
+        state = data
+        
+def clear_state():
+    if helper.file_exists("/image_gallery_state.json"):
+        os.remove("/image_gallery_state.json")
+        
 def update():
     global SKIP_DRAW
     global current
+    global state
+    
+    if helper.file_exists("/image_gallery_state.json"):
+        load_state()
+    
+    if state is not None:
+        current = state['current']
+        SKIP_DRAW = False
+        clear_state()
+        
+    
     result = sr.read()
     button_a = sr[7]
     button_b = sr[6]
     button_c = sr[5]
     button_d = sr[4]
     button_e = sr[3]
-    
-    activity_led.on()
     if button_a == 1:
         current = 0
         SKIP_DRAW = False
@@ -67,7 +91,7 @@ def update():
         SKIP_DRAW = False
 
 def draw():
-    print("draw")
+    print("draw",IMAGE[current])
     j = jpegdec.JPEG(display)
     j.open_file(IMAGE[current])
     j.decode(0, 0, jpegdec.JPEG_SCALE_FULL)

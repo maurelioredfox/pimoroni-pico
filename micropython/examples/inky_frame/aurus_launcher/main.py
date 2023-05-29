@@ -16,7 +16,7 @@ if helper.inky_frame.button_a.read() and helper.inky_frame.button_e.read():
     helper.update_state("menu")
 
 if helper.inky_frame.button_d.read() and helper.inky_frame.button_e.read():
-    helper.update_state("router")
+    helper.update_state("server")
 
 if not helper.file_exists("state.json"):
     helper.update_state("menu")
