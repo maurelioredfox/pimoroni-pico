@@ -49,16 +49,20 @@
                         headers:{'Content-Type':'application/json'},
                         body: JSON.stringify({"state":"image_gallery", "config": { "current": 5 }})
                     });
+                })
+                .then(function(resp){
+                    alert("done, badge is resetting");
                 });
             }
             else{
                 switch (program){
                     case "badge":
                         payload["config"] = {
-                            "image":0,
-                            "border":0,
-                            "colors":0,
-                            "text":0,
+                            "name": document.querySelector('input[name="badge_name"]:checked').value / 1,
+                            "image": document.querySelector('input[name="badge_image"]:checked').value / 1,
+                            "border": document.querySelector('input[name="badge_border"]:checked').value / 1,
+                            "colors": document.querySelector('input[name="badge_color"]:checked').value / 1,
+                            "text": document.querySelector('input[name="badge_text"]:checked').value / 1,
                             "new": true
                         };
                         break;
@@ -73,17 +77,38 @@
                         payload["config"] = { "current": 5 };
                         break;
                 }
-                
-                fetch("./save", {
-                    method:"POST",
-                    headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify(payload)
-                });
+
+                if(program == 'badge' && payload["config"]["image"] == 3) {
+                    fetch("./savecamerabadge", {
+                        method:"POST",
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({"image": image.slice(image.indexOf('base64') + 7) })
+                    })
+                    .then(function(resp){
+                        fetch("./save", {
+                            method:"POST",
+                            headers:{'Content-Type':'application/json'},
+                            body: JSON.stringify(payload)
+                        })
+                    })
+                    .then(function(resp){
+                        alert("done, badge is resetting");
+                    });
+                }
+                else {
+                    fetch("./save", {
+                        method:"POST",
+                        headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify(payload)
+                    })
+                    .then(function(resp){
+                        alert("done, badge is resetting");
+                    });
+                }
             }
         }
         
         function handleModeRadio(evt) {
-            //evt.preventDefault();
             const selected = this.value;
             const configDivs = document.querySelectorAll("div.config");
             configDivs.forEach(div => {
@@ -95,27 +120,73 @@
                 configToShow.style.display = 'block';
             }
         }
+        
+        function handleModeRadioBadge(evt) {
+            const selected = this.value;
+            const configbadge = document.getElementById("camera_badge");
+            if(selected == 3) {
+                configbadge.style.display = 'block';
+            }
+            else {
+                configbadge.style.display = 'none';
+            }
+        }
 
-        let image = null
-        let img_upload = document.getElementById("file_upload")
-        let img_canvas = document.getElementById("file_canvas")
+        let image = null;
+        let img_canvas = document.getElementById("file_canvas");
+        let img_canvas_badge = document.getElementById("file_canvas_badge");
 
-        function resizeAndPreview(file){
-            
-            var reader = new FileReader();
+        function resizeAndPreview(file,badge = 0){
+            if(badge == 1){
+                x = 250;
+                y = 350;
+            } else {
+                x = 640;
+                y = 400;
+            }
+
+            let reader = new FileReader();
             reader.onload = function (e) {
-                var img = document.createElement("img");
+                let img = document.createElement("img");
                 img.onload = function (event) {
-                    var canvas = document.createElement('canvas');
-                    canvas.width = 640
-                    canvas.height = 400
-                    var context = canvas.getContext('2d');
-                    context.drawImage(img, 0, 0, 640, 400);
-                    image = canvas.toDataURL('image/jpeg', 0.2)
-            
-                    img_canvas.innerHTML = `<div class="image">
-                        <img src="${image}" alt="image">
-                    </div>`
+                    let canvas = document.createElement('canvas');
+                    let context = canvas.getContext('2d');
+
+                    // Determine the image dimensions and aspect ratios
+                    let sourceWidth = img.width;
+                    let sourceHeight = img.height;
+                    let sourceRatio = sourceWidth / sourceHeight;
+                    let targetRatio = x / y;
+                    
+                    // Calculate the new dimensions for resizing and cropping
+                    let width, height, offsetX, offsetY;
+                    if (sourceRatio > targetRatio) {
+                        width = sourceHeight * targetRatio;
+                        height = sourceHeight;
+                        offsetX = (sourceWidth - width) / 2;
+                        offsetY = 0;
+                    } 
+                    else {
+                        width = sourceWidth;
+                        height = sourceWidth / targetRatio;
+                        offsetX = 0;
+                        offsetY = (sourceHeight - height) / 2;
+                    }
+
+                    // Resize and crop the image
+                    canvas.width = x
+                    canvas.height = y
+                    context.drawImage(img, offsetX, offsetY, width, height, 0, 0, x, y);
+                    image = canvas.toDataURL('image/jpeg', 0.1)
+                    if(badge == 1) {
+                        img_canvas_badge.innerHTML = `<div class="image">
+                            <img src="${image}" alt="image">
+                        </div>`
+                    } else {
+                        img_canvas.innerHTML = `<div class="image">
+                            <img src="${image}" alt="image">
+                        </div>`
+                    }
                 }
                 img.src = e.target.result;
             }
@@ -128,7 +199,13 @@
                 input.addEventListener('touchstart', handleModeRadio);
                 input.addEventListener('click', handleModeRadio);
             });
-            
+
+            const badgephotoinputs = document.querySelectorAll("input[name='badge_image']");
+            badgephotoinputs.forEach(input => {
+                input.addEventListener('touchstart', handleModeRadioBadge);
+                input.addEventListener('click', handleModeRadioBadge);
+            });
+
             img_upload = document.getElementById("file_upload")
             img_canvas = document.getElementById("file_canvas")
 
@@ -136,6 +213,15 @@
                 const file = img_upload.files
                 resizeAndPreview(file[0]);
             })
+
+            img_upload_badge = document.getElementById("file_upload_badge")
+            img_canvas_badge = document.getElementById("file_canvas_badge")
+
+            img_upload_badge.addEventListener("change", () => {
+                const file = img_upload_badge.files
+                resizeAndPreview(file[0],1);
+            })
+            
         };
         
     </script>
@@ -154,7 +240,53 @@
     </div>
     <hr>
     <div id="config_badge" class="config" style="display: none;">
-        <p>badge config placeholder</p>
+        <h3>Name</h3>
+        <div id="config_badge_name">
+            <input type="radio" id="badgename1" name="badge_name" value="0">
+            <label for="badgename1">Pixylatte</label><br>
+            <input type="radio" id="badgename2" name="badge_name" value="1">
+            <label for="badgename2">Aurunemaru</label><br> 
+        </div>
+        <h3>Image</h3>
+        <div id="config_badge_name">
+            <input type="radio" id="badgeimage1" name="badge_image" value="0">
+            <label for="badgeimage1">Pixy Jojo</label><br>
+            <input type="radio" id="badgeimage2" name="badge_image" value="1">
+            <label for="badgeimage2">Auru Archer</label><br> 
+            <input type="radio" id="badgeimage3" name="badge_image" value="2">
+            <label for="badgeimage3">Pixy 1braincell</label><br> 
+            <input type="radio" id="badgeimage4" name="badge_image" value="3">
+            <label for="badgeimage4">Photo</label><br> 
+            <div id="camera_badge" class="camera_badge" style="display: none;">
+                <input id="file_upload_badge" name="file_upload_badge" type="file" accept="image/jpeg, image/png, image/jpg">
+                <output id="file_canvas_badge"></output>
+            </div>
+        </div>
+        <h3>Border</h3>
+        <div id="config_badge_name">
+            <input type="radio" id="badgeborder1" name="badge_border" value="0">
+            <label for="badgeborder1">Normar</label><br>
+            <input type="radio" id="badgeborder2" name="badge_border" value="1">
+            <label for="badgeborder2">Vorny</label><br> 
+        </div>
+        <h3>Color Scheme</h3>
+        <div id="config_badge_name">
+            <input type="radio" id="badgecolor1" name="badge_color" value="0">
+            <label for="badgecolor1">Matrix</label><br>
+            <input type="radio" id="badgecolor2" name="badge_color" value="1">
+            <label for="badgecolor2">Woody</label><br> 
+            <input type="radio" id="badgecolor3" name="badge_color" value="2">
+            <label for="badgecolor3">White/blue</label><br> 
+        </div>
+        <h3>Text</h3>
+        <div id="config_badge_name">
+            <input type="radio" id="badgetext1" name="badge_text" value="0">
+            <label for="badgetext1">Default Presentation</label><br>
+            <input type="radio" id="badgetext2" name="badge_text" value="1">
+            <label for="badgetext2">Nutrition facts</label><br> 
+            <input type="radio" id="badgetext3" name="badge_text" value="2">
+            <label for="badgetext3">PKMN Moveset</label><br> 
+        </div>
     </div>
     <div id="config_passport" class="config" style="display: none;">
         <p>passport config placeholder</p>

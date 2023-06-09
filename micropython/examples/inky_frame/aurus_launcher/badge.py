@@ -57,11 +57,11 @@ Colors = [{
     }]
 
 NAME = [{"name":"Pixylatte","size":2},{"name":"Aurunemaru","size":1.7}]
-IMAGE = [{"file":"img/badge_pixy.jpg","name":0},{"file":"img/badge_auru.jpg","name":1},{"file":"img/badge_potat.jpg","name":0}]
+IMAGE = ["img/badge_pixy.jpg","img/badge_auru.jpg","img/badge_potat.jpg","img/camerabadge.jpg"]
 
 gc.collect()
 
-state = {"image":0, "border":1, "colors":0, "text":0, "new":True}
+state = {"image":0, "name": 0, "border":1, "colors":0, "text":0, "new":True}
   
 SKIP_DRAW = False
     
@@ -127,9 +127,9 @@ def update():
         if button_a: #picture
             button = 7
             maxvalue = 3
-        #if button_b: #name
-        #    button = 6
-        #    maxvalue = 2
+        if button_b: #name
+            button = 6
+            maxvalue = 2
         if button_c: #border
             button = 5
             maxvalue = 2
@@ -159,8 +159,8 @@ def update():
         
         if button is 7: #picture
             state["image"] = new_value - 1
-        #if button is 6: #name
-        #    state["name"] = new_value - 1
+        if button is 6: #name
+            state["name"] = new_value - 1
         if button is 5: #border
             state["border"] = new_value - 1
         if button is 4: #color
@@ -184,14 +184,13 @@ def draw():
     safeSetPen(display,Colors[state["colors"]]["Text1"])
     display.set_font("gothic")
     display.set_thickness(3)
-    namenumber = IMAGE[state["image"]]["name"]
-    display.text(NAME[namenumber]["name"],320,50,scale = NAME[namenumber]["size"])
+    display.text(NAME[state["name"]]["name"],320,50,scale = NAME[state["name"]]["size"])
     
     #picture
     gc.collect()
     
     jpeg = jpegdec.JPEG(display)
-    jpeg.open_file(IMAGE[state["image"]]["file"])
+    jpeg.open_file(IMAGE[state["image"]])
     jpeg.decode(25,25,jpegdec.JPEG_SCALE_FULL) #plz 350 x 250
     del jpeg
     gc.collect()
@@ -217,7 +216,7 @@ def draw():
     
     display.set_thickness(1)
     display.text("picture",80,392,scale = 1)
-    #display.text("name",200,392,scale = 1)
+    display.text("name",200,392,scale = 1)
     display.text("border",320,392,scale = 1)
     display.text("color",440,392,scale = 1)
     display.text("text",560,392,scale = 1)

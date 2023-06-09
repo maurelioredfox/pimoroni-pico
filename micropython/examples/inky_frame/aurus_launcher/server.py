@@ -42,6 +42,23 @@ async def savecamera(request, response):
     
     print('/savecamera finished')
     
+@app.route('/savecamerabadge', methods=['POST'], save_headers = ['Content-Length','Content-Type'], max_body_size = 160000)
+async def savecamerabadge(request, response):
+    print('/savecamera called')
+    gc.collect()
+    
+    if helper.file_exists("img/camerabadge.jpg"):
+        os.remove("img/camerabadge.jpg")
+        
+    content = await request.read_parse_form_data()
+    with open("img/camerabadge.jpg", "wb") as f:
+        f.write(ubinascii.a2b_base64(content['image']))
+        
+    await response.start_html()
+    await response.send('<html><body>ok</body></html>\n')
+    
+    print('/savecamera finished')
+    
    
 @app.route('/save', methods=['POST'], save_headers = ['Content-Length','Content-Type'])
 async def save(request, response):
@@ -57,6 +74,9 @@ async def save(request, response):
     
     elif(content["state"] == 'passport'):
         pass
+    
+    await response.start_html()
+    await response.send('<html><body>ok</body></html>\n')
     
     reset()
     
