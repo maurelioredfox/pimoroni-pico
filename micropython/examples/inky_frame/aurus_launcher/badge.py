@@ -128,6 +128,8 @@ def update():
             button = 7
             maxvalue = 3
         if button_b: #name
+            if 'custom_name' in state:
+                del state['custom_name']
             button = 6
             maxvalue = 2
         if button_c: #border
@@ -184,7 +186,10 @@ def draw():
     safeSetPen(display,Colors[state["colors"]]["Text1"])
     display.set_font("gothic")
     display.set_thickness(3)
-    display.text(NAME[state["name"]]["name"],320,50,scale = NAME[state["name"]]["size"])
+    if 'custom_name' in state and state['custom_name']:
+        display.text(state['custom_name'],320,50,scale = 1.7)
+    else:
+        display.text(NAME[state["name"]]["name"],320,50,scale = NAME[state["name"]]["size"])
     
     #picture
     gc.collect()

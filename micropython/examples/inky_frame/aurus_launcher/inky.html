@@ -59,6 +59,7 @@
                     case "badge":
                         payload["config"] = {
                             "name": document.querySelector('input[name="badge_name"]:checked').value / 1,
+                            "custom_name": document.querySelector('input[name="badge_custom_name"]').value,
                             "image": document.querySelector('input[name="badge_image"]:checked').value / 1,
                             "border": document.querySelector('input[name="badge_border"]:checked').value / 1,
                             "colors": document.querySelector('input[name="badge_color"]:checked').value / 1,
@@ -246,6 +247,8 @@
             <label for="badgename1">Pixylatte</label><br>
             <input type="radio" id="badgename2" name="badge_name" value="1">
             <label for="badgename2">Aurunemaru</label><br> 
+            <input type="text" id="badge_custom_name" name="badge_custom_name">
+            <label for="badge_custom_name">custom</label><br> 
         </div>
         <h3>Image</h3>
         <div id="config_badge_name">
