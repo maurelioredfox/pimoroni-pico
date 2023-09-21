@@ -82,7 +82,7 @@ def texts2(display,colors):
     display.text("Current Moves",335,130,wordwrap=285,scale = 4)
     safeSetPen(display,colors[1])
     display.set_thickness(2)
-    display.text("Charm",360,180,wordwrap=285,scale = 3)
+    display.text("Fake Tears",360,180,wordwrap=285,scale = 3)
     display.text("Tera Blast",360,220,wordwrap=285,scale = 3)
     display.text("Moonblast",360,260,wordwrap=285,scale = 3)
     display.text("Draining Kiss",360,300,wordwrap=285,scale = 3)
@@ -92,12 +92,13 @@ def texts2(display,colors):
     
     jpeg = jpegdec.JPEG(display)
     jpeg.open_file("img/badgetext_fairy.jpg")
-    jpeg.decode(320,173,jpegdec.JPEG_SCALE_FULL)
+    #jpeg.decode(320,173,jpegdec.JPEG_SCALE_FULL)
     jpeg.decode(320,253,jpegdec.JPEG_SCALE_FULL)
     jpeg.decode(320,293,jpegdec.JPEG_SCALE_FULL)
     
     gc.collect()
     
+    #normal type
     safeSetPen(display,[150,150,150])
     display.rectangle(320,213,30,30)
     safeSetPen(display,[255,255,255])
@@ -105,9 +106,17 @@ def texts2(display,colors):
     safeSetPen(display,[150,150,150])
     display.circle(335,228,9)
     
+    #dark type
+    safeSetPen(display,[30,30,30])
+    display.rectangle(320,173,30,30)
+    safeSetPen(display,[255,255,255])
+    display.circle(335,188,12)
+    safeSetPen(display,[30,30,30])
+    display.polygon([(335,178),(342,181),(345,188),(342,195),(335,198),(338,195),(340,188),(338,181)])
+    
     safeSetPen(display,colors[1])
     
-    display.text("Lv. 70",335,350,wordwrap=285,scale = 4)
+    display.text("Lv. 100",335,350,wordwrap=285,scale = 4)
     
     safeSetPen(display,[234,93,234])
     display.rectangle(510,330,50,50)

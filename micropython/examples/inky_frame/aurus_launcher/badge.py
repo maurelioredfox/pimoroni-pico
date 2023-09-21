@@ -39,16 +39,16 @@ number_2_led = Pin(14, Pin.OUT)
 number_1_led = Pin(15, Pin.OUT)
 
 #variables that are short
-Colors = [{
-    "Background": GREEN,
-    "BackgroundBoxes": BLACK,
-    "Text1": WHITE,
-    "Text2": (77, 255, 77)
-    },{
-    "Background": (77, 34, 44),
-    "BackgroundBoxes": (33, 11, 27),
-    "Text1": (207, 171, 81),
-    "Text2": (157, 101, 76)
+Colors = [{ #sylveon
+    "Background": (80, 139, 236),
+    "BackgroundBoxes": WHITE,
+    "Text1": (196, 61, 105),
+    "Text2": (45, 45, 102)
+    },{ #auru
+    "Background": (228, 49, 33),
+    "BackgroundBoxes": TAUPE,
+    "Text1": (80, 30, 8),
+    "Text2": (24, 5, 1)
     },{
     "Background": (80, 80, 112),
     "BackgroundBoxes": (234, 240, 216),

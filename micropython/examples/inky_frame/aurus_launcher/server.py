@@ -80,6 +80,11 @@ async def save(request, response):
     
     reset()
     
+@app.route('/coffee', methods=['GET'])
+async def coffee(request, response):
+    
+    response.error(418)
+    
     
 
 # Run the web server as the sole process
