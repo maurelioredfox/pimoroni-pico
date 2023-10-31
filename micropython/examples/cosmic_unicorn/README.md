@@ -9,6 +9,7 @@
   - [Feature Test With Audio](#feature-test-with-audio)
   - [Fire Effect](#fire-effect)
   - [Lava Lamp](#lava-lamp)
+  - [Light Sensor](#light-sensor)
   - [Nostalgia Prompt](#nostalgia-prompt)
   - [Rainbow](#rainbow)
   - [Scrolling Text](#scrolling-text)
@@ -85,6 +86,14 @@ A pretty, procedural fire effect. Switch between landscape fire and vertical fir
 
 A 70s-tastic, procedural rainbow lava lamp. You can adjust the brightness with LUX + and -.
 
+### Light Sensor
+
+[light_sensor.py](light_sensor.py)
+
+Reads data from the on board light sensor and displays the brightness level of the environment. The display is by default set to auto brightness i.e reacts to the brightness of the environment. 
+- Button A turns auto brightness off 
+- Button B turns auto brightness on
+ 
 ### Nostalgia Prompt
 
 [nostalgia_prompt.py](nostalgia_prompt.py)
@@ -174,3 +183,6 @@ If you want to get the demo reel that Cosmic Unicorn ships with back, copy the c
 Here are some cool Cosmic Unicorn community projects and resources that you might find useful / inspirational! Note that code at the links below has not been tested by us and we're not able to offer support with it.
 
 - :link: [Green Energy Display with Cosmic Unicorn](https://www.hackster.io/andreas-motzek/clock-and-green-energy-display-with-cosmic-unicorn-641dcb)
+- :link: [cosmic-emoji-react - paint emojis from a computer, phone or tablet](https://github.com/chriscareycode/cosmic-unicorn/tree/main/cosmic-emoji-react)
+- :link: [cosmic-paste - paste images from the clipboard to Cosmic Unicorn](https://github.com/chriscareycode/cosmic-unicorn/tree/main/cosmic-paste)
+- :link: [Halloweenicorn - PIR enabled scarer](https://github.com/mrglennjones/Halloweenicorn)

@@ -8,6 +8,7 @@ namespace pimoroni {
   int PicoGraphics::reset_pen(uint8_t i) {return -1;};
   int PicoGraphics::create_pen(uint8_t r, uint8_t g, uint8_t b) {return -1;};
   int PicoGraphics::create_pen_hsv(float h, float s, float v){return -1;};
+  void PicoGraphics::set_pixel_alpha(const Point &p, const uint8_t a) {};
   void PicoGraphics::set_pixel_dither(const Point &p, const RGB &c) {};
   void PicoGraphics::set_pixel_dither(const Point &p, const RGB565 &c) {};
   void PicoGraphics::set_pixel_dither(const Point &p, const uint8_t &c) {};
@@ -16,6 +17,7 @@ namespace pimoroni {
 
   int PicoGraphics::get_palette_size() {return 0;}
   RGB* PicoGraphics::get_palette() {return nullptr;}
+  bool PicoGraphics::supports_alpha_blend() {return false;}
 
   void PicoGraphics::set_dimensions(int width, int height) {
     bounds = clip = {0, 0, width, height};
@@ -132,7 +134,7 @@ namespace pimoroni {
     if (bitmap_font) {
       bitmap::character(bitmap_font, [this](int32_t x, int32_t y, int32_t w, int32_t h) {
         rectangle(Rect(x, y, w, h));
-      }, c, p.x, p.y, std::max(1.0f, s));
+      }, c, p.x, p.y, std::max(1.0f, s), int32_t(a) % 360);
       return;
     }
 
@@ -144,11 +146,11 @@ namespace pimoroni {
     }
   }
 
-  void PicoGraphics::text(const std::string_view &t, const Point &p, int32_t wrap, float s, float a, uint8_t letter_spacing) {
+  void PicoGraphics::text(const std::string_view &t, const Point &p, int32_t wrap, float s, float a, uint8_t letter_spacing, bool fixed_width) {
     if (bitmap_font) {
       bitmap::text(bitmap_font, [this](int32_t x, int32_t y, int32_t w, int32_t h) {
         rectangle(Rect(x, y, w, h));
-      }, t, p.x, p.y, wrap, std::max(1.0f, s), letter_spacing);
+      }, t, p.x, p.y, wrap, std::max(1.0f, s), letter_spacing, fixed_width, int32_t(a) % 360);
       return;
     }
 
@@ -166,8 +168,8 @@ namespace pimoroni {
     }
   }
 
-  int32_t PicoGraphics::measure_text(const std::string_view &t, float s, uint8_t letter_spacing) {
-    if (bitmap_font) return bitmap::measure_text(bitmap_font, t, std::max(1.0f, s), letter_spacing);
+  int32_t PicoGraphics::measure_text(const std::string_view &t, float s, uint8_t letter_spacing, bool fixed_width) {
+    if (bitmap_font) return bitmap::measure_text(bitmap_font, t, std::max(1.0f, s), letter_spacing, fixed_width);
     if (hershey_font) return hershey::measure_text(hershey_font, t, s);
     return 0;
   }
@@ -266,7 +268,7 @@ namespace pimoroni {
           int32_t ex = points[j].x;
           int32_t px = int32_t(sx + float(fy - sy) / float(ey - sy) * float(ex - sx));
 
-          nodes[n++] = px < clip.x ? clip.x : (px >= clip.x + clip.w ? clip.x + clip.w - 1 : px);// clamp(int32_t(sx + float(fy - sy) / float(ey - sy) * float(ex - sx)), clip.x, clip.x + clip.w);
+          nodes[n++] = px;
         }
       }
 

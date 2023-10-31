@@ -26,6 +26,7 @@
 namespace pimoroni {
   typedef uint8_t RGB332;
   typedef uint16_t RGB565;
+  typedef uint16_t RGB555;
   typedef uint32_t RGB888;
 
 
@@ -46,7 +47,19 @@ namespace pimoroni {
       g((c >> 8) & 0xff),
       b(c & 0xff) {}
     constexpr RGB(int16_t r, int16_t g, int16_t b) : r(r), g(g), b(b) {}
-  
+
+    constexpr uint8_t blend(uint8_t s, uint8_t d, uint8_t a) {
+      return d + ((a * (s - d) + 127) >> 8);
+    }
+
+    constexpr RGB blend(RGB with, const uint8_t alpha) {
+      return RGB(
+        blend(with.r, r, alpha),
+        blend(with.g, g, alpha),
+        blend(with.b, b, alpha)
+      );
+    }
+
     static RGB from_hsv(float h, float s, float v) {
       float i = floor(h * 6.0f);
       float f = h * 6.0f - i;
@@ -106,6 +119,14 @@ namespace pimoroni {
                    ((b & 0b11111000) >> 3);
 
       return __builtin_bswap16(p);
+    }
+
+    constexpr RGB555 to_rgb555() {
+      uint16_t p = ((r & 0b11111000) << 7) |
+                   ((g & 0b11111000) << 2) |
+                   ((b & 0b11111000) >> 3);
+
+      return p;
     }
 
     constexpr RGB565 to_rgb332() {
@@ -192,7 +213,10 @@ namespace pimoroni {
       PEN_RGB332,
       PEN_RGB565,
       PEN_RGB888,
-      PEN_INKY7
+      PEN_INKY7,
+      PEN_DV_RGB555,
+      PEN_DV_P5,
+      PEN_DV_RGB888,
     };
 
     void *frame_buffer;
@@ -256,6 +280,7 @@ namespace pimoroni {
 
     virtual int get_palette_size();
     virtual RGB* get_palette();
+    virtual bool supports_alpha_blend();
 
     virtual int create_pen(uint8_t r, uint8_t g, uint8_t b);
     virtual int create_pen_hsv(float h, float s, float v);
@@ -264,8 +289,11 @@ namespace pimoroni {
     virtual void set_pixel_dither(const Point &p, const RGB &c);
     virtual void set_pixel_dither(const Point &p, const RGB565 &c);
     virtual void set_pixel_dither(const Point &p, const uint8_t &c);
+    virtual void set_pixel_alpha(const Point &p, const uint8_t a);
     virtual void frame_convert(PenType type, conversion_callback_func callback);
     virtual void sprite(void* data, const Point &sprite, const Point &dest, const int scale, const int transparent);
+
+    virtual bool render_pico_vector_tile(const Rect &bounds, uint8_t* alpha_data, uint32_t stride, uint8_t alpha_type) { return false; }
 
     void set_font(const bitmap::font_t *font);
     void set_font(const hershey::font_t *font);
@@ -286,8 +314,8 @@ namespace pimoroni {
     void rectangle(const Rect &r);
     void circle(const Point &p, int32_t r);
     void character(const char c, const Point &p, float s = 2.0f, float a = 0.0f);
-    void text(const std::string_view &t, const Point &p, int32_t wrap, float s = 2.0f, float a = 0.0f, uint8_t letter_spacing = 1);
-    int32_t measure_text(const std::string_view &t, float s = 2.0f, uint8_t letter_spacing = 1);
+    void text(const std::string_view &t, const Point &p, int32_t wrap, float s = 2.0f, float a = 0.0f, uint8_t letter_spacing = 1, bool fixed_width = false);
+    int32_t measure_text(const std::string_view &t, float s = 2.0f, uint8_t letter_spacing = 1, bool fixed_width = false);
     void polygon(const std::vector<Point> &points);
     void triangle(Point p1, Point p2, Point p3);
     void line(Point p1, Point p2);
@@ -459,6 +487,9 @@ namespace pimoroni {
       void set_pixel_span(const Point &p, uint l) override;
       void set_pixel_dither(const Point &p, const RGB &c) override;
       void set_pixel_dither(const Point &p, const RGB565 &c) override;
+      void set_pixel_alpha(const Point &p, const uint8_t a) override;
+
+      bool supports_alpha_blend() override {return true;}
 
       void sprite(void* data, const Point &sprite, const Point &dest, const int scale, const int transparent) override;
 
@@ -528,6 +559,12 @@ namespace pimoroni {
        virtual void read_pixel_span(const Point &p, uint l, T *data) {};
    };
 
+  class IPaletteDisplayDriver {
+    public:
+      virtual void write_palette_pixel(const Point &p, uint8_t colour) = 0;
+      virtual void write_palette_pixel_span(const Point &p, uint l, uint8_t colour) = 0;
+      virtual void set_palette_colour(uint8_t entry, RGB888 colour) = 0;
+  };
 
   class PicoGraphics_PenInky7 : public PicoGraphics {
     public:

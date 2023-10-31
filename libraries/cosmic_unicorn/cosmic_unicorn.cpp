@@ -6,8 +6,10 @@
 #include "hardware/clocks.h"
 
 
+#ifndef NO_QSTR
 #include "cosmic_unicorn.pio.h"
 #include "audio_i2s.pio.h"
+#endif
 
 #include "cosmic_unicorn.hpp"
 
@@ -31,16 +33,12 @@
 // for each row:
 //   for each bcd frame:
 //            0: 00111111                           // row pixel count (minus one)
-//      1  - 64: xxxxxbgr, xxxxxbgr, xxxxxbgr, ...  // pixel data
-//      65 - 67: xxxxxxxx, xxxxxxxx, xxxxxxxx       // dummy bytes to dword align
-//           68: xxxxrrrr                           // row select bits
-//      69 - 71: tttttttt, tttttttt, tttttttt       // bcd tick count (0-65536)
+//            1: xxxxrrrr                           // row select bits
+//      2  - 65: xxxxxbgr, xxxxxbgr, xxxxxbgr, ...  // pixel data
+//      66 - 67: xxxxxxxx, xxxxxxxx,                // dummy bytes to dword align
+//      68 - 71: tttttttt, tttttttt, tttttttt       // bcd tick count (0-65536)
 //
 //  .. and back to the start
-
-static uint16_t r_gamma_lut[256] = {0};
-static uint16_t g_gamma_lut[256] = {0};
-static uint16_t b_gamma_lut[256] = {0};
 
 static uint32_t dma_channel;
 static uint32_t dma_ctrl_channel;
@@ -122,19 +120,6 @@ namespace pimoroni {
       // Tear down the old GU instance's hardware resources
       partial_teardown();
     }
-
-
-    // create 14-bit gamma luts
-    for(uint16_t v = 0; v < 256; v++) {
-      // gamma correct the provided 0-255 brightness value onto a
-      // 0-65535 range for the pwm counter
-      float r_gamma = 1.8f;
-      r_gamma_lut[v] = (uint16_t)(powf((float)(v) / 255.0f, r_gamma) * (float(1U << (BCD_FRAME_COUNT)) - 1.0f) + 0.5f);
-      float g_gamma = 1.8f;
-      g_gamma_lut[v] = (uint16_t)(powf((float)(v) / 255.0f, g_gamma) * (float(1U << (BCD_FRAME_COUNT)) - 1.0f) + 0.5f);
-      float b_gamma = 1.8f;
-      b_gamma_lut[v] = (uint16_t)(powf((float)(v) / 255.0f, b_gamma) * (float(1U << (BCD_FRAME_COUNT)) - 1.0f) + 0.5f);
-    }
                 
     // for each row:
     //   for each bcd frame:
@@ -154,18 +139,19 @@ namespace pimoroni {
         uint8_t *p = &bitstream[row * ROW_BYTES + (BCD_FRAME_BYTES * frame)];
 
         p[ 0] = 64 - 1;               // row pixel count
-        p[68] = row;                  // row select
+        p[ 1] = row;                  // row select
 
         // set the number of bcd ticks for this frame
         uint32_t bcd_ticks = (1 << frame);
-        p[69] = (bcd_ticks &     0xff) >>  0;
-        p[70] = (bcd_ticks &   0xff00) >>  8;
-        p[71] = (bcd_ticks & 0xff0000) >> 16;
+        p[68] = (bcd_ticks &       0xff) >>  0;
+        p[69] = (bcd_ticks &     0xff00) >>  8;
+        p[70] = (bcd_ticks &   0xff0000) >> 16;
+        p[71] = (bcd_ticks & 0xff000000) >> 24;
       }
     }
 
     // setup light sensor adc
-    adc_init();
+    if (!(adc_hw->cs & ADC_CS_EN_BITS)) adc_init();
     adc_gpio_init(LIGHT_SENSOR);
 
     gpio_init(COLUMN_CLOCK); gpio_set_dir(COLUMN_CLOCK, GPIO_OUT); gpio_put(COLUMN_CLOCK, false);
@@ -475,9 +461,9 @@ namespace pimoroni {
     g = (g * this->brightness) >> 8;
     b = (b * this->brightness) >> 8;
 
-    uint16_t gamma_r = r_gamma_lut[r];
-    uint16_t gamma_g = g_gamma_lut[g];
-    uint16_t gamma_b = b_gamma_lut[b];
+    uint16_t gamma_r = GAMMA_14BIT[r];
+    uint16_t gamma_g = GAMMA_14BIT[g];
+    uint16_t gamma_b = GAMMA_14BIT[b];
 
     // for each row:
     //   for each bcd frame:
@@ -491,7 +477,7 @@ namespace pimoroni {
 
     // set the appropriate bits in the separate bcd frames
     for(uint8_t frame = 0; frame < BCD_FRAME_COUNT; frame++) {
-      uint8_t *p = &bitstream[y * ROW_BYTES + (BCD_FRAME_BYTES * frame) + 1 + x];
+      uint8_t *p = &bitstream[y * ROW_BYTES + (BCD_FRAME_BYTES * frame) + 2 + x];
 
       uint8_t red_bit = gamma_r & 0b1;
       uint8_t green_bit = gamma_g & 0b1;

@@ -10,6 +10,7 @@
   - [Feature Test With Audio](#feature-test-with-audio)
   - [Fire Effect](#fire-effect)
   - [Lava Lamp](#lava-lamp)
+  - [Light Sensor](#light-sensor)
   - [Nostalgia Prompt](#nostalgia-prompt)
   - [Rainbow](#rainbow)
   - [Scrolling Text](#scrolling-text)
@@ -88,6 +89,14 @@ A pretty, procedural fire effect. Switch between landscape fire and vertical fir
 
 A 70s-tastic, procedural rainbow lava lamp. You can adjust the brightness with LUX + and -.
 
+### Light Sensor
+
+[light_sensor.py](light_sensor.py)
+
+Reads data from the on board light sensor and displays the brightness level of the environment. The display is by default set to auto brightness i.e reacts to the brightness of the environment. 
+- Button A turns auto brightness off 
+- Button B turns auto brightness on
+ 
 ### Nostalgia Prompt
 
 [nostalgia_prompt.py](nostalgia_prompt.py)
@@ -151,5 +160,8 @@ Here are some cool Galactic Unicorn community projects and resources that you mi
 - :link: [Galactic Unicorn Bounce - Simple GFX Demo](https://www.instructables.com/Galactic-Unicorn-Bounce-Simple-GFX-Demo/)
 - :link: [Cheerlights + Galactic Unicorn + MicroPython (beginner-friendly tutorial)](https://cheerlights.com/cheerlights-raspberry-pi-pico-w-micropython/)
 - :link: [CheerClock (plus laser-cut templates for a fancy case/diffuser)](https://github.com/seanosteen/CheerClock)
-- :link: [Make a giant Pomodoro timer using Galactic Unicorn](https://www.raspberrypi.com/news/make-a-giant-pomodoro-timer-using-galactic-unicorn/)
+- :link: [Giant Pomodoro timer using Galactic Unicorn](https://www.raspberrypi.com/news/make-a-giant-pomodoro-timer-using-galactic-unicorn/)
 - :link: [Galactic Weather Clock](https://github.com/raphv/galactic-weather-clock)
+- :link: [Unicorn Clock](https://github.com/hugokernel/UnicornClock)
+- :link: [Unicorn Weather Station](https://github.com/TagWolf/UnicornWeatherStation)
+- :link: [Unicorn News/RSS Feed Display](https://github.com/TagWolf/UnicornRSSDisplay)

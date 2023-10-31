@@ -37,6 +37,7 @@ typedef struct _ModPicoGraphics_obj_t {
     DisplayDriver *display;
     void *spritedata;
     void *buffer;
+    void *fontdata;
     _PimoroniI2C_obj_t *i2c;
     //mp_obj_t scanline_callback; // Not really feasible in MicroPython
 } ModPicoGraphics_obj_t;
@@ -60,10 +61,10 @@ bool get_display_settings(PicoGraphicsDisplay display, int &width, int &height, 
             if(pen_type == -1) pen_type = PEN_RGB332;
             break;
         case DISPLAY_PICO_DISPLAY_2:
+        case DISPLAY_PICO_W_EXPLORER:
             width = 320;
             height = 240;
             bus_type = BUS_SPI;
-            // Tufty display is upside-down
             if(rotate == -1) rotate = (int)Rotation::ROTATE_0;
             if(pen_type == -1) pen_type = PEN_RGB332;
             break;
@@ -210,6 +211,14 @@ bool get_display_settings(PicoGraphicsDisplay display, int &width, int &height, 
             if(rotate == -1) rotate = (int)Rotation::ROTATE_0;
             if(pen_type == -1) pen_type = PEN_RGB888;
             break;
+        case DISPLAY_STELLAR_UNICORN:
+            width = 16;
+            height = 16;
+            bus_type = BUS_PIO;
+            // Portrait to match labelling
+            if(rotate == -1) rotate = (int)Rotation::ROTATE_0;
+            if(pen_type == -1) pen_type = PEN_RGB888;
+            break;
         case DISPLAY_UNICORN_PACK:
             width = 16;
             height = 7;
@@ -289,17 +298,17 @@ mp_obj_t ModPicoGraphics_make_new(const mp_obj_type_t *type, size_t n_args, size
     pimoroni::ParallelPins parallel_bus = {10, 11, 12, 13, 14, 2}; // Default for Tufty 2040 parallel
     pimoroni::I2C *i2c_bus = nullptr;
 
-    if (mp_obj_is_type(args[ARG_bus].u_obj, &SPIPins_type)) {
+    if (mp_obj_is_exact_type(args[ARG_bus].u_obj, &SPIPins_type)) {
         if(bus_type != BUS_SPI) mp_raise_ValueError("unexpected SPI bus!");
         _PimoroniBus_obj_t *bus = (_PimoroniBus_obj_t *)MP_OBJ_TO_PTR(args[ARG_bus].u_obj);
         spi_bus = *(SPIPins *)(bus->pins);
 
-    } else if (mp_obj_is_type(args[ARG_bus].u_obj, &ParallelPins_type)) {
+    } else if (mp_obj_is_exact_type(args[ARG_bus].u_obj, &ParallelPins_type)) {
         if(bus_type != BUS_PARALLEL) mp_raise_ValueError("unexpected Parallel bus!");
         _PimoroniBus_obj_t *bus = (_PimoroniBus_obj_t *)MP_OBJ_TO_PTR(args[ARG_bus].u_obj);
         parallel_bus = *(ParallelPins *)(bus->pins);
 
-    } else if (mp_obj_is_type(args[ARG_bus].u_obj, &PimoroniI2C_type) || MP_OBJ_IS_TYPE(args[ARG_bus].u_obj, &machine_i2c_type)) {
+    } else if (mp_obj_is_exact_type(args[ARG_bus].u_obj, &PimoroniI2C_type) || mp_obj_is_exact_type(args[ARG_bus].u_obj, &machine_i2c_type)) {
         if(bus_type != BUS_I2C) mp_raise_ValueError("unexpected I2C bus!");
         self->i2c = PimoroniI2C_from_machine_i2c_or_native(args[ARG_bus].u_obj);
         i2c_bus = (pimoroni::I2C *)(self->i2c->i2c);
@@ -316,6 +325,8 @@ mp_obj_t ModPicoGraphics_make_new(const mp_obj_type_t *type, size_t n_args, size
                 spi_bus = {PIMORONI_SPI_DEFAULT_INSTANCE, SPI_BG_FRONT_CS, SPI_DEFAULT_SCK, SPI_DEFAULT_MOSI, PIN_UNUSED, 20, PIN_UNUSED};
             } else if (display == DISPLAY_GFX_PACK) {
                 spi_bus = {PIMORONI_SPI_DEFAULT_INSTANCE, 17, SPI_DEFAULT_SCK, SPI_DEFAULT_MOSI, PIN_UNUSED, 20, 9};
+            } else if (display == DISPLAY_PICO_W_EXPLORER) {
+                spi_bus = {PIMORONI_SPI_DEFAULT_INSTANCE, 17, SPI_DEFAULT_SCK, SPI_DEFAULT_MOSI, PIN_UNUSED, SPI_DEFAULT_MISO, 9};
             }
         }
     }
@@ -354,6 +365,7 @@ mp_obj_t ModPicoGraphics_make_new(const mp_obj_type_t *type, size_t n_args, size
             || display == DISPLAY_INTERSTATE75_64X32
             || display == DISPLAY_GALACTIC_UNICORN
             || display == DISPLAY_COSMIC_UNICORN
+            || display == DISPLAY_STELLAR_UNICORN
             || display == DISPLAY_UNICORN_PACK
             || display == DISPLAY_SCROLL_PACK) {
         // Create a dummy display driver
@@ -429,7 +441,6 @@ mp_obj_t ModPicoGraphics_make_new(const mp_obj_type_t *type, size_t n_args, size
     if (display != DISPLAY_INKY_FRAME && display != DISPLAY_INKY_FRAME_4 && display != DISPLAY_INKY_PACK && display != DISPLAY_INKY_FRAME_7) {
         self->display->update(self->graphics);
     }
-
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -511,7 +522,16 @@ mp_obj_t ModPicoGraphics_sprite(size_t n_args, const mp_obj_t *args) {
 
 mp_obj_t ModPicoGraphics_set_font(mp_obj_t self_in, mp_obj_t font) {
     ModPicoGraphics_obj_t *self = MP_OBJ_TO_PTR2(self_in, ModPicoGraphics_obj_t);
-    self->graphics->set_font(mp_obj_to_string_r(font));
+
+    if (mp_obj_is_str(font)) {
+        self->graphics->set_font(mp_obj_to_string_r(font));
+    }
+    else {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(font, &bufinfo, MP_BUFFER_READ);
+        self->fontdata = bufinfo.buf;
+        self->graphics->set_font(((bitmap::font_t *)self->fontdata));
+    }
     return mp_const_none;
 }
 
@@ -786,7 +806,7 @@ mp_obj_t ModPicoGraphics_set_palette(size_t n_args, const mp_obj_t *pos_args, mp
 
     // Check if there is only one argument, which might be a list
     if(n_args == 2) {
-        if(mp_obj_is_type(pos_args[1], &mp_type_list)) {
+        if(mp_obj_is_exact_type(pos_args[1], &mp_type_list)) {
             mp_obj_list_t *points = MP_OBJ_TO_PTR2(pos_args[1], mp_obj_list_t);
 
             if(points->len <= 0) mp_raise_ValueError("set_palette(): cannot provide an empty list");
@@ -801,7 +821,7 @@ mp_obj_t ModPicoGraphics_set_palette(size_t n_args, const mp_obj_t *pos_args, mp
 
     for(size_t i = 0; i < num_tuples; i++) {
         mp_obj_t obj = tuples[i];
-        if(!mp_obj_is_type(obj, &mp_type_tuple)) mp_raise_ValueError("set_palette(): can't convert object to tuple");
+        if(!mp_obj_is_exact_type(obj, &mp_type_tuple)) mp_raise_ValueError("set_palette(): can't convert object to tuple");
 
         mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR2(obj, mp_obj_tuple_t);
 
@@ -927,7 +947,7 @@ mp_obj_t ModPicoGraphics_character(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 
 mp_obj_t ModPicoGraphics_text(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_self, ARG_text, ARG_x, ARG_y, ARG_wrap, ARG_scale, ARG_angle, ARG_spacing };
+    enum { ARG_self, ARG_text, ARG_x, ARG_y, ARG_wrap, ARG_scale, ARG_angle, ARG_spacing, ARG_fixed_width };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -937,6 +957,7 @@ mp_obj_t ModPicoGraphics_text(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
         { MP_QSTR_scale, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_angle, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_spacing, MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_fixed_width, MP_ARG_OBJ, {.u_obj = mp_const_false} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -958,19 +979,21 @@ mp_obj_t ModPicoGraphics_text(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     float scale = args[ARG_scale].u_obj == mp_const_none ? 2.0f : mp_obj_get_float(args[ARG_scale].u_obj);
     int angle = args[ARG_angle].u_int;
     int letter_spacing = args[ARG_spacing].u_int;
+    bool fixed_width = args[ARG_fixed_width].u_obj == mp_const_true;
 
-    self->graphics->text(t, Point(x, y), wrap, scale, angle, letter_spacing);
+    self->graphics->text(t, Point(x, y), wrap, scale, angle, letter_spacing, fixed_width);
 
     return mp_const_none;
 }
 
 mp_obj_t ModPicoGraphics_measure_text(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_self, ARG_text, ARG_scale, ARG_spacing };
+    enum { ARG_self, ARG_text, ARG_scale, ARG_spacing, ARG_fixed_width };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_text, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_scale, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_spacing, MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_fixed_width, MP_ARG_OBJ, {.u_obj = mp_const_false} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -988,8 +1011,9 @@ mp_obj_t ModPicoGraphics_measure_text(size_t n_args, const mp_obj_t *pos_args, m
 
     float scale = args[ARG_scale].u_obj == mp_const_none ? 2.0f : mp_obj_get_float(args[ARG_scale].u_obj);
     int letter_spacing = args[ARG_spacing].u_int;
+    bool fixed_width = args[ARG_fixed_width].u_obj == mp_const_true;
 
-    int width = self->graphics->measure_text(t, scale, letter_spacing);
+    int width = self->graphics->measure_text(t, scale, letter_spacing, fixed_width);
 
     return mp_obj_new_int(width);
 }
@@ -1002,7 +1026,7 @@ mp_obj_t ModPicoGraphics_polygon(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     // Check if there is only one argument, which might be a list
     if(n_args == 2) {
-        if(mp_obj_is_type(pos_args[1], &mp_type_list)) {
+        if(mp_obj_is_exact_type(pos_args[1], &mp_type_list)) {
             mp_obj_list_t *points = MP_OBJ_TO_PTR2(pos_args[1], mp_obj_list_t);
 
             if(points->len <= 0) mp_raise_ValueError("poly(): cannot provide an empty list");
@@ -1019,7 +1043,7 @@ mp_obj_t ModPicoGraphics_polygon(size_t n_args, const mp_obj_t *pos_args, mp_map
         std::vector<Point> points;
         for(size_t i = 0; i < num_tuples; i++) {
             mp_obj_t obj = tuples[i];
-            if(!mp_obj_is_type(obj, &mp_type_tuple)) mp_raise_ValueError("poly(): can't convert object to tuple");
+            if(!mp_obj_is_exact_type(obj, &mp_type_tuple)) mp_raise_ValueError("poly(): can't convert object to tuple");
 
             mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR2(obj, mp_obj_tuple_t);
 

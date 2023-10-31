@@ -72,6 +72,8 @@ Bear in mind that MicroPython has only 192K of RAM available- a 320x240 pixel di
 * Galactic Unicorn - 53x11 LED Matrix - `DISPLAY_GALACTIC_UNICORN`
 * Interstate75 and 75W - HUB75 Matrix driver - `DISPLAY_INTERSTATE75_SIZEOFMATRIX` please read below!
 * Cosmic Unicorn - 32x32 LED Matrix - `DISPLAY_COSMIC_UNICORN`
+* Stellar Unicorn - 16x16 LED Matrix - `DISPLAY_STELLAR_UNICORN`
+* Pico Unicorn Pack - 16x7 LED Matrix - `DISPLAY_UNICORN_PACK`
 
 #### Interstate75 and Interstate75W Display modes
 
@@ -273,7 +275,7 @@ Send the contents of your Pico Graphics buffer to your screen:
 display.update()
 ```
 
-If you are using a Galactic Unicorn, then the process for updating the display is different. Instead of the above, do:
+If you are using a Unicorn (Galactic, Cosmic, Stellar or Pico), then the process for updating the display is different. Instead of the above, do:
 
 ```python
 galactic_unicorn.update(display)
@@ -304,7 +306,7 @@ These are aligned from their top-left corner.
 * `bitmap8`
 * `bitmap14_outline`
 
-Vector (Hershey) fonts. 
+Vector (Hershey) fonts.
 These are aligned horizontally (x) to their left edge, but vertically (y) to their midline excluding descenders [i.e., aligned at top edge of lower case letter m]. At `scale=1`, the top edge of upper case letters is 10 pixels above the specified `y`, text baseline is 10 pixels below the specified `y`, and descenders go down to 20 pixels below the specified `y`.
 
 * `sans`
@@ -340,6 +342,7 @@ display.text(text, x, y, wordwrap, scale, angle, spacing)
 * `scale` - size
 * `angle` - rotation angle (Vector only!)
 * `spacing` - letter spacing
+* `fixed_width` - space all characters equal distance apart (monospace)
 
 Text scale can be a whole number (integer) for Bitmap fonts, or a decimal (float) for Vector (Hershey) fonts.
 
@@ -354,7 +357,7 @@ Draws "Hello World" in a 16px tall, 2x scaled version of the `bitmap8` font.
 Sometimes you might want to measure a text string for centering or alignment on screen, you can do this with:
 
 ```python
-width = display.measure_text(text, scale, spacing)
+width = display.measure_text(text, scale, spacing, fixed_width)
 ```
 
 The height of each Bitmap font is explicit in its name.
