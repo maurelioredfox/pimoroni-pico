@@ -58,7 +58,8 @@ def prepare_for_launch() -> None:
         if k not in ("__name__",
                      "application_file_to_launch",
                      "gc",
-                     "display_singleton"):
+                     "display_singleton",
+                     "retro_badge_base"):
             del locals()[k]
     gc.collect()
 
